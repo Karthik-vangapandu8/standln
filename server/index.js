@@ -1,19 +1,16 @@
 import 'dotenv/config';
 import express from 'express';
-import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
 import multer from 'multer';
 import { synthesizeSpeech, transcribeAudio, getVoices } from './elevenlabs.js';
-import { analyzeMeetingWithGemma } from './gemma.js';
-import { sendWhatsAppViaBrowserbase, launchWhatsAppLinkingSession, scanWhatsAppChats } from './browserbase.js';
 import { searchLaptopMaterials } from './file_search.js';
 import { searchDriveCatalog } from './drive_search.js';
 import { startTelegramBot, broadcastAnnouncementToTelegram } from './telegram_bot.js';
-import { 
-  isDeadlineOrScheduleQuery, 
-  answerScheduleQuery, 
-  getAnnouncements, 
+import {
+  isDeadlineOrScheduleQuery,
+  answerScheduleQuery,
+  getAnnouncements,
   saveAnnouncement,
   deleteAnnouncement,
   updateAnnouncementStatus
@@ -22,8 +19,8 @@ import { digestFacultyCircular } from './circular_digest.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-app.use(cors());
+// No cors() — the dashboard is served by the same Express server.
+// Binding to 127.0.0.1 means only the local machine can reach the API.
 app.use(express.json());
 const CACHE_DIR = path.resolve('cache');
 if (!fs.existsSync(CACHE_DIR)) {
@@ -33,41 +30,8 @@ if (!fs.existsSync(CACHE_DIR)) {
 app.use(express.static('public'));
 app.use('/audio', express.static(CACHE_DIR));
 
-// Built-in sample scenarios for instant one-click testing
-const SAMPLE_MEETINGS = {
-  dc_machines: {
-    title: "EE 204: Performance of DC Machines & Transformers",
-    category: "Electrical Engineering",
-    transcript: `Professor Rao: Good morning class. Today we're diving into the performance characteristics of DC machines and single-phase transformers.
-First, attendance check:
-Karthik Vangapandu? Karthik, are you on the call?
-(Brief pause)
-Okay, moving ahead. Remember: in a DC motor, back-EMF is not just a passive voltage—it is the fundamental self-regulating governor of the machine. The formula Eb = (P * Phi * Z * N) / (60 * A) dictates that if the mechanical load increases, the motor momentarily slows down, Eb drops, and armature current Ia rises automatically to produce the required electromagnetic torque!
-Now for transformers: remember our open-circuit and short-circuit tests. Maximum efficiency occurs strictly when variable copper losses equal constant core iron losses!
-Important exam announcement: question two on next Tuesday's midterm will specifically test transformer efficiency calculations. Also, submit your DC machine speed control lab report by Friday midnight on the portal.`
-  },
-  college_class: {
-    title: "Calculus II - Morning Lecture & Roll Call",
-    category: "Mathematics",
-    transcript: `Professor Miller: Alright everyone, quiet down, let's start today's lecture. First, roll call for attendance. 
-Sarah Jenkins? Present. 
-David Chen? Present. 
-Karthik Vangapandu? Karthik, are you here today?
-(Silence for 2 seconds)
-Professor Miller: Moving on... Alex Rivera? Present.
-Okay, before we get into integration by parts, an important announcement: Quiz number three, which was scheduled for this Wednesday, is officially postponed to next Monday because of the campus technical downtime. Also, make sure to submit homework assignment four on the portal by Friday midnight. No extensions on that one.`
-  },
-  engineering_standup: {
-    title: "Sprint 42 Daily Engineering Standup",
-    category: "Software Engineering",
-    transcript: `Sarah (Product): Good morning team. Let's do a quick round for today's standup. Marcus, you go first.
-Marcus: Yesterday I finished the API route refactoring. Today I'm reviewing pull requests. No blockers.
-Sarah: Awesome. Karthik, you're up next. How is the database migration to PostgreSQL going? Are we on track for staging release today?
-(Short pause)
-Sarah: Let's follow up on Slack if audio isn't working. Next is Elena.
-Elena: I'm finishing the CSS layout for the checkout page. We should be ready by 3 PM.`
-  }
-};
+// ─── Legacy WhatsApp/meeting pipeline removed — see legacy/ folder ────────────
+
 
 /**
  * Health check endpoint
@@ -113,136 +77,8 @@ app.get('/api/voices', async (req, res) => {
   res.json(voices);
 });
 
-import { execFile } from 'child_process';
-import { promisify } from 'util';
+// ─── Removed: /api/process-meeting — see legacy/ for old pipeline ────────────
 
-const execFileAsync = promisify(execFile);
-
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 35 * 1024 * 1024 } // 35 MB max
-});
-
-const multiUpload = upload.fields([
-  { name: 'audio', maxCount: 1 },
-  { name: 'pdf', maxCount: 1 }
-]);
-
-/**
- * Extract text from PDF using PyMuPDF (fitz)
- */
-async function extractTextFromPdfBuffer(pdfBuffer) {
-  const tempPath = path.join(CACHE_DIR, `temp_${Date.now()}_slides.pdf`);
-  try {
-    fs.writeFileSync(tempPath, pdfBuffer);
-    const { stdout } = await execFileAsync('python3', [path.resolve('server/pdf_extractor.py'), tempPath]);
-    const result = JSON.parse(stdout);
-    if (result.success) {
-      console.log(`[PyMuPDF] Successfully extracted ${result.totalPages} pages from PDF handout.`);
-      return result.extractedText || '';
-    } else {
-      console.warn('[PyMuPDF extraction failed]:', result.error);
-      return '';
-    }
-  } catch (err) {
-    console.error('[PyMuPDF Error]:', err.message);
-    return '';
-  } finally {
-    if (fs.existsSync(tempPath)) {
-      try { fs.unlinkSync(tempPath); } catch (e) {}
-    }
-  }
-}
-
-/**
- * Process a meeting (Audio/Text + optional PDF handout -> Gemma -> ElevenLabs Audio)
- */
-app.post('/api/process-meeting', multiUpload, async (req, res) => {
-  try {
-    let transcript = req.body.transcript || '';
-    const userName = req.body.userName || 'Karthik';
-    const voiceId = req.body.voiceId || process.env.ELEVENLABS_VOICE_ID;
-    let pdfContext = '';
-
-    // Step 1: If PDF handout/slides uploaded, extract with PyMuPDF
-    if (req.files && req.files['pdf'] && req.files['pdf'][0]) {
-      const pdfFile = req.files['pdf'][0];
-      console.log(`[PyMuPDF] Processing PDF handout: ${pdfFile.originalname} (${pdfFile.size} bytes)`);
-      pdfContext = await extractTextFromPdfBuffer(pdfFile.buffer);
-    }
-
-    // Step 2: If audio file uploaded, transcribe with ElevenLabs Scribe
-    if (req.files && req.files['audio'] && req.files['audio'][0]) {
-      const audioFile = req.files['audio'][0];
-      console.log(`[Process] Received audio upload (${audioFile.size} bytes, type: ${audioFile.mimetype})`);
-      try {
-        transcript = await transcribeAudio(audioFile.buffer, audioFile.mimetype);
-      } catch (sttError) {
-        console.warn(`[Process STT warning]: ${sttError.message}. Using fallback sample transcript.`);
-        transcript = SAMPLE_MEETINGS.dc_machines.transcript;
-      }
-    }
-
-    if (!transcript || transcript.trim().length === 0) {
-      return res.status(400).json({ error: 'Please provide either an audio recording, a transcript, or choose a sample scenario.' });
-    }
-
-    // Step 3: Analyze meeting using local open-weight Gemma model with PDF context
-    const gemmaAnalysis = await analyzeMeetingWithGemma(transcript, userName, pdfContext);
-
-    // Step 3: Synthesize ElevenLabs spoken debrief audio
-    let debriefAudio = null;
-    let surrogateAudio = null;
-    let crBroadcastAudio = null;
-    let elevenLabsError = null;
-
-    try {
-      if (process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_API_KEY !== 'your_elevenlabs_api_key_here') {
-        // Generate main debrief voice
-        const debriefResult = await synthesizeSpeech(gemmaAnalysis.spokendebriefScript, voiceId);
-        debriefAudio = debriefResult.url;
-
-        // If user was called, generate the surrogate reply audio too!
-        if (gemmaAnalysis.attendanceOrNameCalled && gemmaAnalysis.surrogateAutoReply && gemmaAnalysis.surrogateAutoReply !== 'None needed.') {
-          const surrogateResult = await synthesizeSpeech(gemmaAnalysis.surrogateAutoReply, voiceId);
-          surrogateAudio = surrogateResult.url;
-        }
-
-        // Generate Class Representative WhatsApp Voice Note in cloned voice
-        if (gemmaAnalysis.crBroadcast && gemmaAnalysis.crBroadcast.voiceScript) {
-          try {
-            const crResult = await synthesizeSpeech(gemmaAnalysis.crBroadcast.voiceScript, voiceId);
-            crBroadcastAudio = crResult.url;
-          } catch (crErr) {
-            console.warn('[CR Voice Note Warning]:', crErr.message);
-          }
-        }
-      } else {
-        elevenLabsError = 'ElevenLabs API key is missing. Add it to .env to hear real voice generation!';
-      }
-    } catch (ttsErr) {
-      console.error('[TTS Error]:', ttsErr.message);
-      elevenLabsError = ttsErr.message;
-    }
-
-    res.json({
-      success: true,
-      userName,
-      transcript,
-      analysis: gemmaAnalysis,
-      audio: {
-        debriefUrl: debriefAudio,
-        surrogateUrl: surrogateAudio,
-        crBroadcastUrl: crBroadcastAudio,
-        error: elevenLabsError
-      }
-    });
-
-  } catch (error) {
-    console.error('Error processing meeting:', error);
-    res.status(500).json({ error: error.message || 'Failed to process meeting' });
-  }
-});
 
 /**
  * Direct TTS endpoint
@@ -259,100 +95,8 @@ app.post('/api/speak', async (req, res) => {
   }
 });
 
-/**
- * Autonomous Class Representative Auto-Reply (Browserbase + Gemma + ElevenLabs)
- * Automatically replies to classmate WhatsApp DMs asking for notes, formulas, or deadlines!
- */
-app.post('/api/cr-auto-reply', async (req, res) => {
-  try {
-    const { senderName = 'Pavan', incomingMessage = 'hi cr send the notes of ac machines' } = req.body;
-    const userName = req.body.userName || 'Karthik';
-    const voiceId = req.body.voiceId || process.env.ELEVENLABS_VOICE_ID;
 
-    console.log(`[Auto-CR] Received DM from ${senderName}: "${incomingMessage}"`);
-
-    // Step 1: Search for requested document/PDF on local laptop
-    const foundDoc = searchLaptopMaterials(incomingMessage);
-    const matchedTopic = foundDoc ? foundDoc.topic : 'Course Study Materials';
-    const pdfAttached = foundDoc ? foundDoc.fileName : null;
-    const pdfPath = foundDoc ? foundDoc.filePath : null;
-
-    console.log(`[Auto-CR] Laptop File Search Result:`, foundDoc ? `Found ${foundDoc.fileName} (${foundDoc.fileSize} bytes)` : 'No exact match, using default course notes');
-
-    // Step 2: Formulate personalized voice response in Karthik's cloned voice
-    const replyScript = `Hey ${senderName}! Karthik here. I searched my laptop and found the ${matchedTopic} notes for you. Attached the PDF right here. All the best with your prep!`;
-    const replyMessage = `Hey ${senderName}! 👋\n\nI found the notes you asked for on my laptop:\n📄 *${pdfAttached || matchedTopic}*\n\n🎙️ *Voice Note Attached:* (Sent in CR Karthik's cloned voice)\nAll the best with your prep! ⚡📚`;
-
-    // Step 3: Synthesize voice note in Karthik's cloned voice using ElevenLabs Flash v2.5
-    let voiceNoteUrl = null;
-    try {
-      if (process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_API_KEY !== 'your_elevenlabs_api_key_here') {
-        const ttsRes = await synthesizeSpeech(replyScript, voiceId);
-        voiceNoteUrl = ttsRes.url;
-      }
-    } catch (ttsErr) {
-      console.warn('[Auto-CR TTS Warning]:', ttsErr.message);
-    }
-
-    // Step 4: Dispatch to WhatsApp Web in Browserbase Cloud
-    let browserbaseResult = null;
-    try {
-      if (process.env.BROWSERBASE_API_KEY) {
-        browserbaseResult = await sendWhatsAppViaBrowserbase({
-          recipient: senderName,
-          message: replyMessage,
-          voiceNoteUrl,
-          pdfAttached,
-          pdfPath
-        });
-      }
-    } catch (bbErr) {
-      console.warn('[Browserbase Warning]:', bbErr.message);
-    }
-
-    res.json({
-      success: true,
-      senderName,
-      incomingMessage,
-      matchedTopic,
-      pdfAttached,
-      pdfPath,
-      replyScript,
-      replyMessage,
-      voiceNoteUrl,
-      browserbase: browserbaseResult
-    });
-  } catch (err) {
-    console.error('Error in CR auto-reply:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-/**
- * Scan WhatsApp Web chats and contacts via Browserbase
- */
-app.get('/api/browserbase/scan-chats', async (req, res) => {
-  try {
-    const result = await scanWhatsAppChats();
-    res.json(result);
-  } catch (err) {
-    console.error('Error scanning WhatsApp chats:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-/**
- * Launch WhatsApp Web QR Code Linking Session in Browserbase
- */
-app.post('/api/browserbase/link-device', async (req, res) => {
-  try {
-    const result = await launchWhatsAppLinkingSession();
-    res.json(result);
-  } catch (err) {
-    console.error('Error launching linking session:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
+// ─── Removed: /api/cr-auto-reply, /api/browserbase/* (abandoned WhatsApp pipeline) ───
 
 /**
  * Telegram Bot Status & Simulation Endpoints
@@ -563,7 +307,7 @@ app.post('/api/telegram/test-dispatch', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '127.0.0.1', () => {
   console.log(`\n======================================================`);
   console.log(`🦥 StandIn AI Server running at http://localhost:${PORT}`);
   console.log(`🤖 Local LLM: ${process.env.OLLAMA_MODEL || 'gemma3:4b'} on ${process.env.OLLAMA_BASE_URL || 'http://localhost:11434'}`);

@@ -310,7 +310,7 @@ export async function processClassmateTelegramMessage(chatId, senderName, incomi
       matchedUrl = driveMatch.url;
 
       replyScript =
-        `Hey ${senderName}, this is an AI clone of Karthik's voice. ` +
+        `Hey, this is an AI clone of Karthik's voice. ` +
         `The closest match I found is ${matchedTitle}. I've sent you the Google Drive link. Best of luck studying!`;
 
       replyMessage =
@@ -331,7 +331,7 @@ export async function processClassmateTelegramMessage(chatId, senderName, incomi
         localPdfPath = localMatch.filePath;
 
         replyScript =
-          `Hey ${senderName}, this is an AI clone of Karthik's voice. ` +
+          `Hey, this is an AI clone of Karthik's voice. ` +
           `I found the ${matchedTitle} notes for you. The PDF is attached. All the best!`;
 
         replyMessage =

@@ -1,0 +1,16 @@
+[
+  {
+    "title": "Sample Subject — Unit 1 Notes",
+    "subjectName": "Sample Subject",
+    "url": "https://drive.google.com/drive/folders/REPLACE_WITH_YOUR_FOLDER_ID",
+    "parentFolderUrl": "https://drive.google.com/drive/folders/REPLACE_WITH_YOUR_SUBJECT_FOLDER_ID",
+    "tags": ["unit 1", "notes", "sample subject"]
+  },
+  {
+    "title": "Sample Subject — Unit 2 Previous Papers",
+    "subjectName": "Sample Subject",
+    "url": "https://drive.google.com/drive/folders/REPLACE_WITH_YOUR_FOLDER_ID",
+    "parentFolderUrl": "https://drive.google.com/drive/folders/REPLACE_WITH_YOUR_SUBJECT_FOLDER_ID",
+    "tags": ["unit 2", "previous papers", "sample subject"]
+  }
+]

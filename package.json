@@ -1,7 +1,7 @@
 {
   "name": "standin-ai",
   "version": "1.0.0",
-  "description": "StandIn: An open-source AI voice surrogate that attends online classes and meetings for you so you can sleep in.",
+  "description": "StandIn: An AI Telegram bot that stands in as Class Representative — answers classmate queries in your cloned voice, searches the class Google Drive, and broadcasts faculty circulars.",
   "type": "module",
   "main": "server/index.js",
   "scripts": {
@@ -11,18 +11,17 @@
   "keywords": [
     "elevenlabs",
     "gemma",
-    "render",
+    "telegram-bot",
     "voice-agent",
     "hacktoberfest",
-    "open-source-ai"
+    "open-source-ai",
+    "class-representative"
   ],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "multer": "^1.4.5-lts.1",
-    "playwright-core": "^1.64.1"
+    "multer": "^1.4.5-lts.1"
   }
 }

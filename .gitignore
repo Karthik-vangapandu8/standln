@@ -3,6 +3,8 @@ node_modules/
 cache/
 data/audio_cache/
 data/authorized_students.json
+data/announcements.json
+data/drive_catalog.json
 *.log
 .DS_Store
 materials/
