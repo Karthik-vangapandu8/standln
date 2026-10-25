@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StandIn — Class notices, handled</title>
+<meta name="description" content="StandIn AI announcement assistant">
+<style>
+:root{color-scheme:dark;--bg:#0b0d12;--panel:#12151d;--panel2:#171b25;--line:#292e3b;--text:#f4f6fb;--muted:#9aa3b5;--dim:#6f788a;--violet:#a89bff;--violet2:#7564f5;--mint:#8ce3c4;--red:#ff8c9a;--radius:18px}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(ellipse at 12% -10%,#252044 0,transparent 36%),radial-gradient(ellipse at 95% 20%,#102c2a 0,transparent 28%),var(--bg);color:var(--text);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+button,input,textarea,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.shell{max-width:1060px;margin:auto;padding:30px 24px 20px}
+header{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:28px}.brand{display:flex;align-items:center;gap:13px}.logo{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;background:#211f31;border:1px solid #403b5d;font-size:28px}.brandline{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.brand h1{font-size:23px;letter-spacing:-.8px;margin:0;font-weight:800}.badge{font-size:10px;text-transform:uppercase;letter-spacing:1.1px;font-weight:800;color:#c4bbff;border:1px solid #514b7b;background:#25213b;border-radius:999px;padding:4px 8px}.sub{margin:3px 0 0;color:var(--muted);font-size:13px}.statuses{display:flex;justify-content:flex-end;gap:7px;flex-wrap:wrap}.status{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:#11151c;border-radius:999px;padding:7px 10px;color:#c5ccda;font-size:11px;white-space:nowrap}.dot{width:7px;height:7px;border-radius:50%;background:var(--mint);box-shadow:0 0 10px #8ce3c455}.dot.warn{background:#e9bd72;box-shadow:none}
+.card{background:linear-gradient(150deg,rgba(22,25,35,.97),rgba(15,18,25,.98));border:1px solid var(--line);border-radius:22px;box-shadow:0 24px 80px #0003;overflow:hidden}.tabs{display:flex;gap:5px;padding:7px;background:#0e1118;border-bottom:1px solid var(--line)}.tab{border:0;background:transparent;color:var(--muted);padding:11px 17px;border-radius:12px;font-size:13px;font-weight:700}.tab.active{background:#25223a;color:#e7e2ff;box-shadow:inset 0 0 0 1px #49416e}.tab:hover{color:white}.content{padding:28px}.section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:23px}.eyebrow{color:var(--violet);font-size:10px;text-transform:uppercase;letter-spacing:1.4px;font-weight:800;margin:0 0 7px}.section-head h2{font-size:24px;letter-spacing:-.7px;line-height:1.2;margin:0}.section-head p{color:var(--muted);font-size:13px;margin:8px 0 0;max-width:560px}.voice-label{border:1px solid var(--line);background:#11141b;border-radius:11px;padding:9px 11px;color:#cbd0dc;font-size:11px;white-space:nowrap}
+label{display:block;font-size:12px;color:#c5ccda;font-weight:700;margin:0 0 8px}.field{margin-bottom:19px}input,textarea,select{width:100%;background:#0c0f15;border:1px solid #303646;border-radius:12px;padding:13px 14px;color:var(--text);outline:none;transition:border-color .18s,box-shadow .18s}input:focus,textarea:focus,select:focus{border-color:#8d80ff;box-shadow:0 0 0 3px #8d80ff1b}input::placeholder,textarea::placeholder{color:#596273}textarea{min-height:145px;resize:vertical;line-height:1.65}.field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}.input-meta{display:flex;justify-content:space-between;gap:10px;color:var(--dim);font-size:11px;margin-top:7px}.examples{position:relative}.examples select{width:auto;min-width:190px;padding:9px 34px 9px 11px;font-size:12px}
+.actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:22px}.btn{border:1px solid transparent;border-radius:12px;padding:11px 16px;font-size:13px;font-weight:750;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:transform .15s,background .15s}.btn:hover{transform:translateY(-1px)}.primary{background:linear-gradient(135deg,#a99cff,#8171ff);color:#11101b;box-shadow:0 7px 22px #8574ff26}.secondary{background:#202431;border-color:#343a4a;color:#e8ebf3}.quiet{background:transparent;border-color:#333949;color:#b8c0cf}.danger{background:#2b171d;border-color:#56303a;color:#ffadb7}.btn.small{padding:8px 11px;font-size:11px;border-radius:9px}
+.notice{display:none;margin:0 0 18px;padding:12px 14px;border-radius:12px;font-size:12px;border:1px solid #3d4556;background:#171c26;color:#d6dbea}.notice.error{display:block;border-color:#633541;background:#27171d;color:#ffb4bf}.notice.success{display:block;border-color:#2d6255;background:#12251f;color:#a7f0d4}.preview{display:none;border:1px solid #3c365b;background:linear-gradient(145deg,#1b1930,#151823);border-radius:17px;padding:19px;margin-top:24px}.preview.show{display:block}.preview-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.preview-top h3{font-size:15px;margin:0}.preview-label{font-size:10px;color:#bcb2ff;letter-spacing:1.1px;font-weight:800;text-transform:uppercase}.bulletin{background:#0e1118;border:1px solid #303044;border-radius:13px;padding:17px}.bulletin h4{font-size:18px;margin:0 0 8px;letter-spacing:-.3px}.bulletin p{white-space:pre-wrap;color:#d0d5e0;margin:0;font-size:13px;line-height:1.7}.extracts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:13px}.extract{border:1px solid #32364a;background:#121620;border-radius:10px;padding:10px}.extract span{display:block;color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.7px;margin-bottom:3px}.extract strong{font-size:12px;font-weight:600}.preview-audio{margin-top:14px}.preview-audio audio{width:100%;height:38px}.preview-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}.confirm-note{font-size:11px;color:var(--muted);margin:10px 0 0}
+.board{border-top:1px solid var(--line);padding:25px 28px 28px}.board-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:17px}.board-head h3{margin:0;font-size:16px;letter-spacing:-.3px}.count{color:#bdb4ff;background:#28233d;border:1px solid #443b6a;border-radius:999px;padding:4px 9px;font-size:10px;font-weight:800}.filters{display:none;gap:6px;margin-bottom:14px;flex-wrap:wrap}.filters.show{display:flex}.filter{background:transparent;border:1px solid var(--line);border-radius:999px;color:var(--muted);padding:6px 11px;font-size:11px}.filter.active{background:#25223a;color:#e2dcff;border-color:#5a4e8b}.feed{display:grid;grid-template-columns:1fr 1fr;gap:12px}.empty{grid-column:1/-1;border:1px dashed #343a49;border-radius:14px;text-align:center;padding:27px 15px;color:var(--muted);font-size:13px}.empty-icon{font-size:25px;margin-bottom:6px}.notice-card{border:1px solid var(--line);background:#11151d;border-radius:15px;padding:15px;min-width:0}.notice-card h4{font-size:14px;margin:0 0 6px;letter-spacing:-.2px}.notice-meta{font-size:10px;color:var(--dim);margin-bottom:12px}.notice-body{font-size:12px;line-height:1.65;color:#c7cedb;white-space:pre-wrap;overflow-wrap:anywhere}.notice-status{display:inline-flex;font-size:10px;border-radius:999px;padding:4px 7px;margin-top:13px;background:#14291f;border:1px solid #285541;color:#9be5c4}.notice-status.draft{background:#2b2416;border-color:#554523;color:#f2ce8c}.notice-card audio{width:100%;height:34px;margin-top:12px}.notice-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}.notice-actions button{font-size:10px;padding:7px 9px}
+footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:#697284;font-size:11px;padding:18px 4px 0}.privacy{display:flex;align-items:center;gap:7px}.privacy span{color:var(--mint)}details.dev{margin-top:20px;border:1px solid #272d38;border-radius:14px;background:#0e1117}details.dev summary{padding:13px 16px;cursor:pointer;list-style:none;color:#8c95a7;font-size:12px;font-weight:700}details.dev summary::-webkit-details-marker{display:none}details.dev summary:before{content:"＋";display:inline-block;margin-right:9px;color:var(--violet)}details.dev[open] summary:before{content:"−"}.dev-body{padding:0 16px 17px;border-top:1px solid #272d38}.dev-body p{color:var(--muted);font-size:12px}.dev-grid{display:grid;grid-template-columns:1fr 2fr;gap:12px}.dev-result{white-space:pre-wrap;overflow-wrap:anywhere;color:#a7e7cc;font:11px/1.5 ui-monospace,monospace;margin-top:12px}.spinner{width:13px;height:13px;border:2px solid #15121f55;border-top-color:#15121f;border-radius:50%;animation:spin .7s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}[hidden]{display:none!important}
+@media(max-width:720px){.shell{padding:19px 12px}.app-header,header{align-items:flex-start;flex-direction:column}.statuses{justify-content:flex-start}.content{padding:20px}.section-head{flex-direction:column}.tabs{display:grid;grid-template-columns:1fr 1fr}.tab{padding:10px 8px}.field-row,.feed{grid-template-columns:1fr}.board{padding:22px 20px}.voice-label{white-space:normal}.examples select{width:100%}.extracts{grid-template-columns:1fr 1fr}.dev-grid{grid-template-columns:1fr}}
+
+/* StandIn visual direction v2 — vivid citrus + cobalt + coral */
+:root{color-scheme:dark;--bg:#10131e;--panel:#191d2b;--panel2:#20263a;--line:#343c58;--text:#fffaf1;--muted:#b8bfd3;--dim:#8790aa;--violet:#ffcf4a;--violet2:#ff754f;--mint:#b8f34a;--red:#ff8d8d;--radius:20px}
+body{background:radial-gradient(ellipse at 0% 0%,#3d2468 0,transparent 34%),radial-gradient(ellipse at 100% 12%,#153f64 0,transparent 31%),radial-gradient(ellipse at 60% 100%,#3b1e36 0,transparent 35%),#10131e}
+.shell{max-width:1120px;padding-top:34px}
+header{margin-bottom:25px}.logo{width:58px;height:58px;border-radius:19px;background:linear-gradient(145deg,#ffcf4a,#ff754f);border:2px solid #fff0b7;box-shadow:0 8px 30px #ff754f40;font-size:32px;transform:rotate(-3deg)}
+.brand h1{font-size:27px;letter-spacing:-1.2px}.badge{color:#171827;border:0;background:linear-gradient(90deg,#b8f34a,#ffcf4a);padding:5px 10px;letter-spacing:.9px}.sub{color:#bfc7dd}
+.status{background:#1b2030;border-color:#3a4260;color:#e6e9f4}.dot{background:#b8f34a;box-shadow:0 0 12px #b8f34a66}.dot.warn{background:#ffbd4a;box-shadow:0 0 10px #ffbd4a44}
+.card{background:linear-gradient(135deg,#1a1f30f5,#171b29f7);border:1px solid #454d6c;border-radius:25px;box-shadow:0 30px 90px #0005;position:relative}.card:before{content:"";display:block;height:5px;background:linear-gradient(90deg,#ff754f 0%,#ffcf4a 32%,#b8f34a 62%,#5ba8ff 100%)}
+.tabs{background:#141827;border-bottom-color:#343c58;padding:9px 10px;gap:8px}.tab{padding:12px 20px;color:#aeb7cf;border-radius:12px}.tab.active{background:linear-gradient(135deg,#ffcf4a,#ff9d4a);color:#181827;box-shadow:0 6px 20px #ffbd4a24}.tab:hover{color:#fff}
+.content{padding:31px}.eyebrow{color:#ffbd4a}.section-head h2{font-size:28px;letter-spacing:-1px}.section-head p{color:#b8bfd3}.voice-label{background:#242b40;border-color:#424b6d;color:#f3dca0}
+label{color:#e3e7f2}input,textarea,select{background:#111624;border-color:#3a4362;border-radius:14px;color:#fffaf1}input:focus,textarea:focus,select:focus{border-color:#ffcf4a;box-shadow:0 0 0 3px #ffcf4a24}input::placeholder,textarea::placeholder{color:#727d99}textarea{min-height:165px}
+.primary{background:linear-gradient(115deg,#ffcf4a,#ff8b50);color:#171827;box-shadow:0 8px 24px #ff8b5030}.primary:hover{filter:brightness(1.07)}.secondary{background:#26314a;border-color:#435174;color:#f4f5fb}.quiet{background:#191f30;border-color:#424a68;color:#e5e9f5}.danger{background:#3a2029;border-color:#80424e;color:#ffb3b3}
+.notice{border-color:#454d6c;background:#20263a;color:#e9edf7}.notice.error{border-color:#a44b5b;background:#3b202c;color:#ffc0c6}.notice.success{border-color:#5e8436;background:#24331f;color:#d8ff9f}
+.preview{border:1px solid #695c36;background:linear-gradient(135deg,#29253a,#202a38);border-radius:20px;box-shadow:inset 4px 0 0 #ffcf4a}.preview-label{color:#ffcf4a}.preview .badge{background:#b8f34a;color:#172018}.bulletin{background:linear-gradient(135deg,#17243b,#1d2235);border-color:#475678;border-radius:16px;position:relative;overflow:hidden}.bulletin:before{content:"";position:absolute;right:-22px;top:-28px;width:95px;height:95px;border-radius:50%;background:#ffcf4a;opacity:.12}.bulletin h4{font-size:21px;color:#fff5d7}.bulletin p{color:#dbe2f3}.extract{background:#242a3e;border-color:#414a68}.extract span{color:#ffcf4a}.extract strong{color:#fff5e6}
+.board{border-top-color:#343c58}.count{color:#19202b;background:#b8f34a;border:0}.filter{border-color:#414a68;color:#c4cbe0}.filter.active{background:#5ba8ff;color:#101728;border-color:#5ba8ff}.feed{gap:15px}.empty{border:1px dashed #515b7b;background:#1b2030;color:#b8bfd3;border-radius:17px;padding:34px 18px}.empty-icon{font-size:30px}.notice-card{background:linear-gradient(145deg,#20263a,#191e2e);border-color:#3e4868;border-radius:18px;box-shadow:0 10px 28px #0002}.notice-card:nth-child(4n+1){border-top:3px solid #ff754f}.notice-card:nth-child(4n+2){border-top:3px solid #ffcf4a}.notice-card:nth-child(4n+3){border-top:3px solid #b8f34a}.notice-card:nth-child(4n){border-top:3px solid #5ba8ff}.notice-card h4{color:#fff5dd;font-size:15px}.notice-meta{color:#a0abc5}.notice-body{color:#d5dced}.notice-status{background:#26351f;border-color:#587f35;color:#d8ff9f}.notice-status.draft{background:#3b3020;border-color:#8a6933;color:#ffdc8b}
+footer{color:#939db6}.privacy span{color:#b8f34a}details.dev{border-color:#343c58;background:#141827}details.dev summary{color:#b8bfd3}details.dev summary:before{color:#ffcf4a}.dev-body{border-top-color:#343c58}.dev-result{color:#c9f87b}
+.spinner{border-color:#17182755;border-top-color:#171827}
+@media(max-width:720px){.shell{padding:18px 11px}.content{padding:21px 17px}.section-head h2{font-size:25px}.logo{width:52px;height:52px}}
+
+/* StandIn editorial direction — paper, ink, cobalt, vermilion */
+:root{color-scheme:light;--bg:#f4f0e7;--panel:#fffdf7;--panel2:#f8f3e9;--line:#d9d1c3;--text:#1c2230;--muted:#626779;--dim:#858797;--violet:#2549d8;--violet2:#2549d8;--mint:#237a50;--red:#bd392b;--radius:4px}
+html{background:#f4f0e7}
+body{background:#f4f0e7;color:#1c2230;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.shell{max-width:1160px;padding:25px 28px 22px}
+header{align-items:flex-start;padding:7px 0 22px;border-bottom:1px solid #cfc6b7;margin-bottom:24px}
+.brand{gap:14px}.logo{width:58px;height:58px;border-radius:4px;transform:none;background:#2549d8;border:0;box-shadow:4px 4px 0 #f0a344;font-size:31px}
+.brand h1{font-family:Georgia,"Times New Roman",serif;font-size:36px;line-height:1;letter-spacing:-1.7px;font-weight:800;color:#1c2230}
+.brandline{gap:12px}.badge{border-radius:2px;background:#f1b93d;color:#1c2230;border:0;padding:5px 8px;letter-spacing:1px;font-size:9px}
+.sub{color:#626779;font-size:13px;margin-top:7px;letter-spacing:.01em}
+.statuses{gap:6px;max-width:490px}.status{background:#fffdf7;border:1px solid #d9d1c3;border-radius:3px;color:#43495a;padding:7px 9px;font-size:10px}.dot{background:#237a50;box-shadow:none}.dot.warn{background:#d88b18;box-shadow:none}
+.card{background:#fffdf7;border:1px solid #d9d1c3;border-radius:4px;box-shadow:7px 7px 0 #ded6c8;overflow:hidden}.card:before{height:7px;background:linear-gradient(90deg,#2549d8 0 42%,#e85b3f 42% 68%,#f1b93d 68% 84%,#237a50 84%)}
+.tabs{background:#f8f3e9;border-bottom:1px solid #d9d1c3;padding:9px 25px;gap:9px}.tab{border-radius:3px;padding:12px 16px;color:#666a78;font-size:12px;letter-spacing:.02em}.tab.active{background:#2549d8;color:#fffdf7;box-shadow:none}.tab:hover{color:#2549d8}
+.content{padding:36px 38px 34px}.section-head{margin-bottom:27px;align-items:flex-start}.eyebrow{color:#d34b35;font-size:10px;letter-spacing:1.7px;margin-bottom:10px}.section-head h2{font-family:Georgia,"Times New Roman",serif;font-size:36px;line-height:1.08;letter-spacing:-1.15px;max-width:620px;color:#1c2230}.section-head p{color:#626779;line-height:1.65;max-width:590px}.voice-label{background:#edf0ff;border:1px solid #cbd3ff;border-radius:3px;color:#2549d8;font-size:11px;padding:10px 12px}
+label{color:#33394a;font-size:11px;text-transform:uppercase;letter-spacing:.7px;font-weight:800;margin-bottom:9px}
+.field{margin-bottom:21px}.field-row{gap:19px}input,textarea,select{background:#fffefa;border:1px solid #cfc8ba;border-radius:3px;color:#1c2230;padding:14px 15px}input:focus,textarea:focus,select:focus{border-color:#2549d8;box-shadow:0 0 0 3px #2549d81a}input::placeholder,textarea::placeholder{color:#9b9ba3}textarea{min-height:175px;line-height:1.75}.input-meta{color:#858797;font-size:10px}.examples select{min-width:190px}
+.btn{border-radius:3px;padding:12px 16px;font-size:12px;font-weight:800;letter-spacing:.01em;box-shadow:none}.btn:hover{transform:translateY(-2px);box-shadow:3px 3px 0 #d9d1c3}.primary{background:#2549d8;color:#fff;border-color:#2549d8;box-shadow:4px 4px 0 #f1b93d}.primary:hover{background:#1939bc;filter:none}.secondary{background:#f1b93d;border-color:#f1b93d;color:#1c2230}.quiet{background:transparent;border-color:#bcb5a8;color:#454a58}.danger{background:#fff0ed;border-color:#e6b4ac;color:#a22d23}
+.notice{border:1px solid #d9d1c3;border-radius:3px;background:#f8f3e9;color:#33394a}.notice.error{display:block;border-color:#e0a59d;background:#fff0ed;color:#a22d23}.notice.success{display:block;border-color:#a5cbb4;background:#edf7ef;color:#205f3e}
+.preview{border:1px solid #bfc9ff;border-radius:4px;background:#f0f2ff;padding:22px;box-shadow:5px 5px 0 #d9defb}.preview-label{color:#d34b35}.preview .badge{background:#f1b93d;color:#1c2230}.preview-top h3{font-family:Georgia,"Times New Roman",serif;font-size:20px}.bulletin{background:#fffdf7;border:1px solid #d9d1c3;border-radius:3px;padding:22px;position:relative;overflow:hidden}.bulletin:before{content:"NOTICE";position:absolute;right:13px;top:9px;font-size:9px;letter-spacing:2px;font-weight:900;color:#e6dfd3}.bulletin h4{font-family:Georgia,"Times New Roman",serif;font-size:25px;color:#1c2230;max-width:85%;line-height:1.18}.bulletin p{color:#4f5564;line-height:1.8}.extracts{gap:10px}.extract{background:#f8f3e9;border:1px solid #d9d1c3;border-radius:3px}.extract span{color:#2549d8}.extract strong{color:#1c2230}.confirm-note{color:#626779}
+.board{border-top:1px solid #d9d1c3;padding:28px 38px 36px}.board-head h3{font-family:Georgia,"Times New Roman",serif;font-size:21px}.count{background:#f1b93d;color:#1c2230;border:0;border-radius:2px}.filters{gap:7px}.filter{background:#fffdf7;border:1px solid #d9d1c3;border-radius:3px;color:#626779;padding:7px 12px}.filter.active{background:#2549d8;color:white;border-color:#2549d8}.feed{gap:15px}.empty{border:1px dashed #c8c0b3;background:#faf6ee;color:#777987;border-radius:3px;padding:38px 18px}.empty-icon{font-size:30px}.notice-card{background:#fffefa;border:1px solid #d9d1c3;border-radius:3px;box-shadow:3px 3px 0 #e9e2d6;padding:18px}.notice-card:nth-child(4n+1){border-top:4px solid #2549d8}.notice-card:nth-child(4n+2){border-top:4px solid #e85b3f}.notice-card:nth-child(4n+3){border-top:4px solid #f1b93d}.notice-card:nth-child(4n){border-top:4px solid #237a50}.notice-card h4{font-family:Georgia,"Times New Roman",serif;font-size:19px;line-height:1.2;color:#1c2230}.notice-meta{color:#858797}.notice-body{color:#4f5564;line-height:1.75}.notice-status{background:#edf7ef;border:1px solid #b8d7c1;color:#205f3e;border-radius:2px}.notice-status.draft{background:#fff5dc;border-color:#ead49a;color:#8a5b08}
+footer{color:#777987;padding-top:20px}.privacy span{color:#237a50}details.dev{margin-top:20px;background:#eee8dd;border:1px solid #d9d1c3;border-radius:3px}details.dev summary{color:#626779}details.dev summary:before{color:#2549d8}.dev-body{border-top-color:#d9d1c3}.dev-body p{color:#626779}.dev-result{color:#205f3e}.spinner{border-color:#1c223055;border-top-color:#1c2230}
+@media(max-width:720px){.shell{padding:15px 12px}.content{padding:25px 19px}.section-head h2{font-size:30px}.brand h1{font-size:32px}.status{white-space:normal}.board{padding:23px 19px}.card{box-shadow:4px 4px 0 #ded6c8}.tabs{padding:8px}.tab{padding:11px 8px}.voice-label{white-space:normal}.field-row{grid-template-columns:1fr}.examples select{width:100%}}
+
+</style>
+</head>
+<body>
+<div class="shell">
+<header>
+  <div class="brand">
+    <div class="logo" aria-hidden="true">🦥</div>
+    <div><div class="brandline"><h1>StandIn</h1><span class="badge">AI surrogate</span></div><p class="sub">Class notices, handled thoughtfully.</p></div>
+  </div>
+  <div class="statuses" aria-label="Service status">
+    <span class="status" id="status-gemma"><i class="dot"></i> Gemma 3:4B (Local) · ready</span>
+    <span class="status" id="status-elevenlabs"><i class="dot"></i> ElevenLabs · ready</span>
+    <span class="status" id="status-telegram"><i class="dot"></i> Telegram · @standin_cr_eee_bot</span>
+  </div>
+</header>
+<main class="card">
+  <nav class="tabs" aria-label="Main sections">
+    <button class="tab active" id="tab-announcements" type="button" aria-selected="true">✦ Announce</button>
+    <button class="tab" id="tab-board" type="button" aria-selected="false">▤ Notice board</button>
+  </nav>
+  <section class="content" id="panel-announcements">
+    <div class="section-head">
+      <div><p class="eyebrow">Class representative · announcement studio</p><h2>What does your class need to know?</h2><p>Write a clear notice, preview it, then confirm before it becomes active for your class.</p></div>
+      <div class="voice-label">◖)) &nbsp; Voice: Karthik (AI clone)</div>
+    </div>
+    <div id="message" class="notice" role="status" aria-live="polite"></div>
+    <div class="field-row">
+      <div class="field"><label for="ann-input-title">Notice title</label><input id="ann-input-title" maxlength="120" value="" placeholder="e.g. Lecture Shift Notice"></div>
+      <div class="field examples"><label for="examples">Start from an example</label><select id="examples"><option value="">Choose a template…</option><option value="lecture">Lecture Shift Notice</option><option value="lab">Lab Report Deadline</option><option value="exam">Midterm Exam Schedule</option><option value="record">Record Submission</option></select></div>
+    </div>
+    <div class="field">
+      <label for="ann-input-text">Notice message</label>
+      <textarea id="ann-input-text" maxlength="4000" placeholder="Write the important details in plain language…"></textarea>
+      <div class="input-meta"><span>Be specific about dates, times, rooms, and deadlines.</span><span id="char-count">0 / 4000</span></div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="btn-preview" type="button">✦ Clean with AI & Preview</button>
+      <button class="btn secondary" id="btn-save-draft-ann" type="button">Save as draft</button>
+    </div>
+    <section class="preview" id="ann-live-voice-card" aria-live="polite">
+      <div class="preview-top"><div><div class="preview-label" id="preview-badge-status">Preview · not sent yet</div><h3 style="margin-top:4px">Class bulletin</h3></div><span class="badge" id="preview-badge-review">Review first</span></div>
+      <div class="bulletin">
+        <h4 id="preview-title">Class notice</h4>
+        <div style="font-size:12px;color:#7c7062;font-weight:600;margin:8px 0 3px 0;">🎙️ Spoken Voice Note Preview (AI clone of Karthik's voice):</div>
+        <p id="ann-live-script" style="font-style:italic;color:#222;background:#fdfcf9;padding:8px 12px;border-left:3px solid #237a50;border-radius:3px;margin:4px 0 8px 0;"></p>
+      </div>
+      <div id="preview-extracts" class="extracts" hidden></div>
+      <div class="preview-audio" id="preview-audio-wrap" hidden><label>Voice preview</label><audio id="ann-live-audio" controls preload="none"></audio></div>
+      <div class="preview-actions">
+        <button class="btn quiet" id="btn-edit" type="button">← Edit notice</button>
+        <button class="btn primary" id="btn-confirm-send" type="button">✓ Confirm and send to class</button>
+      </div>
+      <p class="confirm-note" id="preview-confirm-note">Nothing is sent until you confirm. Confirming activates the notice and requests the cloned voice note.</p>
+    </section>
+  </section>
+  <section class="content" id="panel-board" hidden>
+    <div class="section-head"><div><p class="eyebrow">Your class · shared notices</p><h2>Notice board</h2><p>Active announcements and saved drafts, all in one place.</p></div><button class="btn secondary" id="btn-new-notice" type="button">＋ New notice</button></div>
+    <div id="board-message" class="notice" role="status" aria-live="polite"></div>
+    <div class="board-head"><h3>Recent notices</h3><span class="count" id="ann-count-badge">Loading…</span></div>
+    <div class="filters" id="notice-filters" aria-label="Filter notices"><button class="filter active" data-filter="all" type="button">All</button><button class="filter" data-filter="Active" type="button">Active</button><button class="filter" data-filter="Draft" type="button">Drafts</button></div>
+    <div class="feed" id="announcements-feed"><div class="empty">Loading notices…</div></div>
+  </section>
+</main>
+<details class="dev">
+  <summary>Developer tools</summary>
+  <div class="dev-body">
+    <p>Test the existing Telegram dispatch endpoint. This tool is kept out of the main workflow.</p>
+    <div class="dev-grid">
+      <div><label for="dev-sender">Sender name</label><input id="dev-sender" value="Classmate"></div>
+      <div><label for="dev-message">Incoming message</label><input id="dev-message" value="any class announcements?"></div>
+    </div>
+    <div class="actions"><button class="btn secondary" id="dev-dispatch" type="button">Run Telegram test dispatch</button></div>
+    <div id="dev-result" class="dev-result" aria-live="polite"></div>
+    <audio id="dev-audio" controls hidden style="width:100%;margin-top:12px"></audio>
+  </div>
+</details>
+<footer><div class="privacy"><span>●</span> Your notices stay on your configured StandIn server.</div><div>StandIn · Made for calmer class communication</div></footer>
+</div>
+<script>
+(() => {
+  const VOICE_ID = 'PIzF7N4AZiqRy5BOSpFC';
+  const AUTHOR = 'CR Karthik';
+  const $ = id => document.getElementById(id);
+  let filter = 'all';
+  let notices = [];
+  let previewReady = false;
+
+  const templates = {
+    lecture: {title:'Lecture Shift Notice', text:"Tomorrow's lecture is shifted to Room 302 at 10 AM. Please arrive on time."},
+    lab: {title:'Lab Report Deadline', text:'VLSI Lab report submission deadline has been extended to Monday 5 PM. Submit to lab staff.'},
+    exam: {title:'Midterm Exam Schedule', text:'PSP Midterm exam is scheduled for Friday at 2 PM in Hall B. Syllabus covers Units 1 through 3.'},
+    record: {title:'Record Submission', text:'All students must bring their signed lab observation books tomorrow without fail.'}
+  };
+
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function showMessage(id, text, type='') {
+    const el = $(id); el.textContent = text; el.className = 'notice' + (type ? ' ' + type : '');
+  }
+  function setBusy(button, busy, text) {
+    if (busy) { button.dataset.label = button.textContent; button.disabled = true; button.innerHTML = '<span class="spinner"></span> ' + text; }
+    else { button.disabled = false; if (button.dataset.label) button.textContent = button.dataset.label; }
+  }
+  async function api(url, options={}) {
+    const response = await fetch(url, options);
+    let data = {};
+    try { data = await response.json(); } catch (_) {}
+    if (!response.ok) throw new Error(data.error || `Request failed (${response.status})`);
+    return data;
+  }
+  async function checkHealth() {
+    try {
+      const data = await api('/api/health');
+      const gemma = $('status-gemma'), eleven = $('status-elevenlabs');
+      gemma.innerHTML = `<i class="dot ${data.ollamaConnected && data.gemmaAvailable ? '' : 'warn'}"></i> ${data.ollamaConnected && data.gemmaAvailable ? 'Gemma 3:4B (Local) · ready' : data.ollamaConnected ? 'Ollama online · check model' : 'Gemma local · offline'}`;
+      eleven.innerHTML = `<i class="dot ${data.elevenLabsConfigured ? '' : 'warn'}"></i> ElevenLabs · ${data.elevenLabsConfigured ? 'ready' : 'not configured'}`;
+    } catch (_) {
+      $('status-gemma').innerHTML = '<i class="dot warn"></i> Gemma 3:4B · unavailable';
+      $('status-elevenlabs').innerHTML = '<i class="dot warn"></i> ElevenLabs · unavailable';
+    }
+    try {
+      const tg = await api('/api/telegram/status');
+      if (tg.username) {
+        $('status-telegram').innerHTML = `<i class="dot ${tg.configured ? '' : 'warn'}"></i> Telegram · @${tg.username}`;
+      }
+    } catch (_) {}
+  }
+  function switchTab(which) {
+    const board = which === 'board';
+    $('panel-announcements').hidden = board;
+    $('panel-board').hidden = !board;
+    $('tab-announcements').classList.toggle('active', !board);
+    $('tab-board').classList.toggle('active', board);
+    $('tab-announcements').setAttribute('aria-selected', String(!board));
+    $('tab-board').setAttribute('aria-selected', String(board));
+    if (board) loadAnnouncements(filter);
+  }
+  function updateCount() { $('char-count').textContent = `${$('ann-input-text').value.length} / 4000`; }
+  function validate() {
+    const title = $('ann-input-title').value.trim();
+    const text = $('ann-input-text').value.trim();
+    if (!text) { showMessage('message', 'Add the notice message before continuing.', 'error'); $('ann-input-text').focus(); return null; }
+    if (!title) { showMessage('message', 'Add a short title so classmates can recognize this notice.', 'error'); $('ann-input-title').focus(); return null; }
+    showMessage('message', '');
+    return {title, text};
+  }
+  let activeVoiceScript = '';
+
+  async function generatePreview() {
+    const textVal = $('ann-input-text').value.trim();
+    if (!textVal) { showMessage('message', 'Add the notice message before continuing.', 'error'); $('ann-input-text').focus(); return false; }
+    
+    let titleVal = $('ann-input-title').value.trim();
+    const previewBtn = $('btn-preview');
+    setBusy(previewBtn, true, 'Digest with AI & Clean…');
+    showMessage('message', '');
+
+    try {
+      const digest = await api('/api/announcements/digest', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ title: titleVal, text: textVal })
+      });
+
+      if (digest && digest.cleanTitle) {
+        if (!titleVal || titleVal === 'Class Notice' || titleVal.length > 40) {
+          $('ann-input-title').value = digest.cleanTitle;
+          titleVal = digest.cleanTitle;
+        }
+        $('preview-title').textContent = titleVal;
+        if (digest.formattedNotice && textVal.length > 120) {
+          $('ann-input-text').value = digest.formattedNotice;
+          updateCount();
+        }
+        activeVoiceScript = digest.spokenVoiceScript;
+        $('ann-live-script').textContent = activeVoiceScript || textVal;
+      } else {
+        $('preview-title').textContent = titleVal || 'Class notice';
+        $('ann-live-script').textContent = textVal;
+        activeVoiceScript = textVal;
+      }
+    } catch (e) {
+      console.warn('Digest fallback:', e);
+      $('preview-title').textContent = titleVal || 'Class notice';
+      $('ann-live-script').textContent = textVal;
+      activeVoiceScript = textVal;
+    } finally {
+      setBusy(previewBtn, false);
+    }
+
+    $('preview-extracts').hidden = true;
+    $('preview-extracts').innerHTML = '';
+    $('preview-audio-wrap').hidden = true;
+    $('ann-live-audio').removeAttribute('src');
+
+    // Reset status badges to preview state
+    const statusEl = $('preview-badge-status');
+    if (statusEl) statusEl.textContent = 'Preview · not sent yet';
+    const reviewEl = $('preview-badge-review');
+    if (reviewEl) reviewEl.textContent = 'Review voice & text';
+    const noteEl = $('preview-confirm-note');
+    if (noteEl) noteEl.textContent = 'Nothing is sent until you confirm. Confirming broadcasts the cleaned notice and cloned voice note to Telegram.';
+    const confirmBtn = $('btn-confirm-send');
+    if (confirmBtn) {
+      confirmBtn.textContent = '✓ Confirm and send to class';
+      confirmBtn.disabled = false;
+    }
+
+    $('ann-live-voice-card').classList.add('show');
+    previewReady = true;
+    $('ann-live-voice-card').scrollIntoView({behavior:'smooth', block:'nearest'});
+    return true;
+  }
+  function extractReturnedFields(data) {
+    const candidates = [
+      ['Subject', data.subject], ['What changed', data.whatChanged], ['Date', data.date],
+      ['Time', data.time], ['Room', data.room]
+    ].filter(([, value]) => value !== undefined && value !== null && String(value).trim() !== '');
+    const wrap = $('preview-extracts');
+    wrap.innerHTML = candidates.map(([label, value]) => `<div class="extract"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join('');
+    wrap.hidden = candidates.length === 0;
+  }
+  async function saveNotice(status, withVoice) {
+    const titleVal = $('ann-input-title').value.trim();
+    const textVal = $('ann-input-text').value.trim();
+    if (!textVal) { showMessage('message', 'Add the notice message before continuing.', 'error'); return; }
+    if (withVoice && !previewReady) {
+      const ok = await generatePreview();
+      if (!ok) return;
+    }
+    const button = withVoice ? $('btn-confirm-send') : $('btn-save-draft-ann');
+    if (withVoice && !window.confirm('Send this notice to the class and activate it in the bot?')) return;
+    setBusy(button, true, withVoice ? 'Sending notice…' : 'Saving draft…');
+    try {
+      const data = await api('/api/announcements', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          title: $('ann-input-title').value.trim() || titleVal || 'Class Notice', 
+          text: $('ann-input-text').value.trim() || textVal, 
+          voiceScript: activeVoiceScript,
+          status, 
+          author:AUTHOR, 
+          voiceId:VOICE_ID
+        })
+      });
+      if (withVoice && data.voiceNoteUrl) {
+        $('ann-live-audio').src = data.voiceNoteUrl;
+        $('preview-audio-wrap').hidden = false;
+      }
+      if (withVoice && data.voiceScript) $('ann-live-script').textContent = data.voiceScript;
+      extractReturnedFields(data);
+      
+      if (withVoice) {
+        const bcCount = data.broadcast?.sentCount || 0;
+        const msg = bcCount > 0 
+          ? `✓ Broadcasted to ${bcCount} student(s) on Telegram & live in bot memory!`
+          : `✓ Notice confirmed, saved to class memory, and activated in bot!`;
+        showMessage('message', msg, 'success');
+
+        // Update card to clearly show it IS SENT & ACTIVE
+        const statusEl = $('preview-badge-status');
+        if (statusEl) statusEl.textContent = '✓ Broadcasted & Live in Bot';
+        const reviewEl = $('preview-badge-review');
+        if (reviewEl) reviewEl.textContent = 'Active Notice';
+        const noteEl = $('preview-confirm-note');
+        if (noteEl) noteEl.textContent = '✅ Notice confirmed! Delivered to Telegram & saved to class memory. Any student asking will get this update!';
+
+        button.textContent = '✓ Broadcasted to Telegram';
+        button.disabled = true;
+        $('ann-live-voice-card').classList.add('show');
+
+        // Automatically switch to Notice Board after 2 seconds so user sees it in recent notices
+        setTimeout(() => {
+          switchTab('board');
+        }, 2000);
+      } else {
+        showMessage('message', 'Draft saved.', 'success');
+        $('ann-input-title').value = ''; $('ann-input-text').value = ''; updateCount();
+        $('ann-live-voice-card').classList.remove('show'); previewReady = false;
+      }
+      await loadAnnouncements(filter);
+    } catch (error) {
+      showMessage('message', error.message || 'Could not save this notice. Try again.', 'error');
+    } finally { setBusy(button, false); }
+  }
+  function dateLabel(value) {
+    if (!value) return 'Recently';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? 'Recently' : date.toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  }
+  async function loadAnnouncements(nextFilter=filter) {
+    filter = nextFilter;
+    const feed = $('announcements-feed');
+    feed.innerHTML = '<div class="empty">Loading notices…</div>';
+    try {
+      const data = await api('/api/announcements');
+      notices = data.announcements || [];
+      const filtered = notices.filter(item => filter === 'all' || item.status === filter);
+      $('ann-count-badge').textContent = `${notices.length} notice${notices.length === 1 ? '' : 's'}`;
+      $('notice-filters').classList.toggle('show', notices.length > 0);
+      document.querySelectorAll('.filter').forEach(btn => btn.classList.toggle('active', btn.dataset.filter === filter));
+      if (!filtered.length) {
+        feed.innerHTML = `<div class="empty"><div class="empty-icon">▤</div><strong>${notices.length ? 'No notices in this filter' : 'Your notice board is clear'}</strong><br>${notices.length ? 'Choose another filter to see more.' : 'Create a notice to see it appear here.'}</div>`;
+        return;
+      }
+      feed.innerHTML = filtered.map(item => {
+        const active = item.status === 'Active' || !item.status;
+        const id = escapeHtml(item.id);
+        const body = item.rawText || item.text || '';
+        return `<article class="notice-card">
+          <h4>${escapeHtml(item.title || 'Class notice')}</h4>
+          <div class="notice-meta">${escapeHtml(item.author || AUTHOR)} · ${escapeHtml(dateLabel(item.createdAt))}</div>
+          <div class="notice-body">${escapeHtml(body)}</div>
+          <span class="notice-status ${active ? '' : 'draft'}">${active ? '● Active' : '◷ Draft'}</span>
+          ${item.voiceUrl ? `<audio controls preload="none" src="${escapeHtml(item.voiceUrl)}"></audio>` : ''}
+          <div class="notice-actions">
+            <button class="btn quiet small" data-action="edit" data-id="${id}" type="button">Edit / reuse</button>
+            <button class="btn quiet small" data-action="toggle" data-id="${id}" data-status="${active ? 'Draft' : 'Active'}" type="button">${active ? 'Move to draft' : 'Activate'}</button>
+            <button class="btn danger small" data-action="delete" data-id="${id}" type="button">Delete</button>
+          </div></article>`;
+      }).join('');
+    } catch (error) {
+      $('ann-count-badge').textContent = 'Unavailable';
+      feed.innerHTML = `<div class="empty">Could not load notices: ${escapeHtml(error.message)}</div>`;
+    }
+  }
+  async function toggleStatus(id, status) {
+    try {
+      await api(`/api/announcements/${encodeURIComponent(id)}`, {method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})});
+      showMessage('board-message', `Notice updated to ${status}.`, 'success'); await loadAnnouncements(filter);
+    } catch (error) { showMessage('board-message', error.message, 'error'); }
+  }
+  async function deleteNotice(id) {
+    if (!window.confirm('Delete this notice from StandIn?')) return;
+    try { await api(`/api/announcements/${encodeURIComponent(id)}`, {method:'DELETE'}); showMessage('board-message','Notice deleted.','success'); await loadAnnouncements(filter); }
+    catch (error) { showMessage('board-message', error.message, 'error'); }
+  }
+
+  $('examples').addEventListener('change', event => {
+    const item = templates[event.target.value]; if (!item) return;
+    $('ann-input-title').value = item.title; $('ann-input-text').value = item.text;
+    updateCount(); previewReady = false; $('ann-live-voice-card').classList.remove('show');
+  });
+  $('ann-input-text').addEventListener('input', () => { updateCount(); previewReady = false; });
+  $('ann-input-title').addEventListener('input', () => { previewReady = false; });
+  $('btn-preview').addEventListener('click', generatePreview);
+  $('btn-edit').addEventListener('click', () => { $('ann-live-voice-card').classList.remove('show'); $('ann-input-title').focus(); });
+  $('btn-save-draft-ann').addEventListener('click', () => saveNotice('Draft', false));
+  $('btn-confirm-send').addEventListener('click', () => saveNotice('Active', true));
+  $('tab-announcements').addEventListener('click', () => switchTab('announce'));
+  $('tab-board').addEventListener('click', () => switchTab('board'));
+  $('btn-new-notice').addEventListener('click', () => { switchTab('announce'); $('ann-input-title').focus(); });
+  document.querySelectorAll('.filter').forEach(btn => btn.addEventListener('click', () => loadAnnouncements(btn.dataset.filter)));
+  $('announcements-feed').addEventListener('click', async event => {
+    const btn = event.target.closest('button[data-action]'); if (!btn) return;
+    const item = notices.find(n => String(n.id) === btn.dataset.id); if (!item) return;
+    if (btn.dataset.action === 'toggle') return toggleStatus(item.id, btn.dataset.status);
+    if (btn.dataset.action === 'delete') return deleteNotice(item.id);
+    if (btn.dataset.action === 'edit') {
+      $('ann-input-title').value = item.title || ''; $('ann-input-text').value = item.rawText || item.text || '';
+      updateCount(); previewReady = false; $('ann-live-voice-card').classList.remove('show'); switchTab('announce'); $('ann-input-title').focus();
+    }
+  });
+  $('dev-dispatch').addEventListener('click', async () => {
+    const button = $('dev-dispatch'), result = $('dev-result');
+    const incomingMessage = $('dev-message').value.trim();
+    if (!incomingMessage) { result.textContent = 'Enter a message first.'; return; }
+    setBusy(button, true, 'Dispatching…'); result.textContent = '';
+    try {
+      const data = await api('/api/telegram/test-dispatch', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({senderName:$('dev-sender').value.trim() || 'Classmate', incomingMessage, userName:'Karthik', voiceId:VOICE_ID})
+      });
+      result.textContent = data.replyMessage || 'Dispatch completed.';
+      if (data.voiceNoteUrl) { $('dev-audio').src = data.voiceNoteUrl; $('dev-audio').hidden = false; }
+    } catch (error) { result.textContent = 'Error: ' + error.message; }
+    finally { setBusy(button, false); }
+  });
+
+  updateCount();
+  checkHealth();
+  loadAnnouncements('all');
+})();
+</script>
+</body>
+</html>

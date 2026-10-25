@@ -1,0 +1,8 @@
+node_modules/
+.env
+cache/
+data/audio_cache/
+data/authorized_students.json
+*.log
+.DS_Store
+materials/
