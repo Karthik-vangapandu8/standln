@@ -57,7 +57,7 @@ Being an engineering **Class Representative (CR)** is exhausting. Every single d
 ### 4. 📢 Announcement Studio & Strict Deadline Q&A
 - Minimalist editorial web dashboard ([http://localhost:3000](http://localhost:3000)).
 - 1-click preset templates (*Lecture Shift*, *Lab Report Deadline*, *Midterm Schedule*).
-- **Zero Hallucination Guardrail:** When a student asks *"when is lab report due?"*, it looks up verified announcements. If an exam is unannounced (e.g. *"when is chemistry exam?"*), it safely falls back: *"I don't have an official announcement on that yet. Check with Professor or wait for CR update."*
+- **Hallucination Guardrail:** When a student asks *"when is lab report due?"*, it looks up verified announcements. If an exam is unannounced (e.g. *"when is chemistry exam?"*), it safely falls back: *"I don't have an official announcement on that yet. Check with Professor or wait for CR update."*
 
 ### 5. 🤖 Local Open-Weight AI (Gemma 3:4B via Ollama)
 - Analyzes lecture transcripts and meeting recordings 100% locally on CPU.
