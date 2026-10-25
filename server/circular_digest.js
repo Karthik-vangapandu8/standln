@@ -147,7 +147,9 @@ export function heuristicDigest(rawText, rawTitle = '') {
   }
 
   if (primaryUrl) {
-    formattedNotice += `🔗 *${primaryLabel}:* [Click here to open](${primaryUrl})\n`;
+    // Use a generic safe label — the primaryLabel from email text often contains
+    // special characters (!, ×, emojis) that break Telegram's Markdown parser
+    formattedNotice += `🔗 [Tap here to open the registration link](${primaryUrl})\n`;
   }
 
   // Spoken voice script: casual, short, human, NEVER spells out URLs!
