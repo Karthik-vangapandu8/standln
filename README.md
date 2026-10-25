@@ -28,36 +28,8 @@ Being an engineering **Class Representative (CR)** is exhausting. Every single d
 
 ## 🏗️ Architecture
 
-```mermaid
-flowchart TD
-    subgraph Class Representative
-        CR[CR Karthik] -->|Pastes Circular / Notice| Studio[Announcement Studio UI]
-        Studio -->|Generates Audio Bulletin| EL_Ann[ElevenLabs Flash v2.5]
-        Studio -->|Saves Structured Memory| DB[(data/announcements.json)]
-    end
+<img width="1774" height="887" alt="image" src="https://github.com/user-attachments/assets/0db03398-893d-409a-8515-b945ed64c215" />
 
-    subgraph Classmate on Telegram
-        Student[Classmate DM] -->|'send me verliog programs pdf'| TG[Telegram Bot: @standin_cr_eee_bot]
-        TG --> Router{Intent Classifier}
-        
-        Router -->|Material Request| Fuzzy[Typo-Tolerant Drive Search\n(Damerau-Levenshtein)]
-        Fuzzy --> Drive[(6th Sem EEE Drive Catalog)]
-        
-        Router -->|Deadline / Room Question| Strict[Strict Ground-Truth Engine]
-        Strict --> DB
-        
-        Fuzzy --> ResponseBuilder[Response Formatter]
-        Strict --> ResponseBuilder
-        
-        ResponseBuilder -->|Synthesizes Voice| EL[ElevenLabs Cloned Voice Engine]
-        EL --> OutVoice[cr_voice_note.mp3]
-        ResponseBuilder --> OutText[Formatted Markdown + Drive Link]
-        
-        OutVoice --> Delivery[Telegram sendVoice API]
-        OutText --> Delivery
-        Delivery -->|Delivered in < 2s| Student
-    end
-```
 
 ---
 
